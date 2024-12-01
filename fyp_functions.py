@@ -114,12 +114,15 @@ def welfare_maximizing_phantom_mechanism(n, m, P):
     allocation = np.array(allocation)
     return allocation, detailed_info
 
-def compute_disutilities(P, allocation, type):
-    disutilities = np.sum(np.abs(P - allocation), axis=1)
+def compute_disutility(P, allocation, type):
+    disutility = np.sum(np.abs(P - allocation), axis=1)  #array of nx1, disutility per agent
     if type == 'welfare':
-        return disutilities
+        return np.sum(disutility)
     elif type == 'fairness':
-        return np.max(disutilities)
+        return np.max(disutility)
+    elif type == 'proportional':
+        return np.sum(np.abs(np.mean(P, axis=0) - allocation))
+
 
 def combined_allocation_and_loss(n, m, P):
     allocation_IMM, _ = independent_market_mechanism(n, m, P)
@@ -130,16 +133,18 @@ def combined_allocation_and_loss(n, m, P):
 
     allocation_C = np.round((allocation_IMM + allocation_WMPM) / 2, 3)
 
-    total_disutility_IMM = np.round(np.sum(compute_disutilities(P, allocation_IMM, type="welfare")), 3)
-    total_disutility_WMPM = np.round(np.sum(compute_disutilities(P, allocation_WMPM, type="welfare")), 3)
-    total_disutility_C = np.round(np.sum(compute_disutilities(P, allocation_C, type="welfare")), 3)
+    total_disutility_IMM = np.round(compute_disutility(P, allocation_IMM, type="welfare"), 3)
+    total_disutility_WMPM = np.round(compute_disutility(P, allocation_WMPM, type="welfare"), 3)
+    total_disutility_C = np.round(compute_disutility(P, allocation_C, type="welfare"), 3)
 
     welfare_loss_IMM = total_disutility_C - total_disutility_IMM
     welfare_loss_WMPM = total_disutility_C - total_disutility_WMPM
 
-    max_disutility_IMM = np.round(compute_disutilities(P, allocation_IMM, type="fairness"), 3)
-    max_disutility_WMPM = np.round(compute_disutilities(P, allocation_WMPM, type="fairness"), 3)
-    max_disutility_C = np.round(compute_disutilities(P, allocation_C, type="fairness"), 3)
+    metrics = 'proportional'
+
+    max_disutility_IMM = np.round(compute_disutility(P, allocation_IMM, type=metrics), 3)
+    max_disutility_WMPM = np.round(compute_disutility(P, allocation_WMPM, type=metrics), 3)
+    max_disutility_C = np.round(compute_disutility(P, allocation_C, type=metrics), 3)
 
     fairness_loss_IMM = max_disutility_C - max_disutility_IMM
     fairness_loss_WMPM = max_disutility_C - max_disutility_WMPM
@@ -165,7 +170,7 @@ def generate_random_preferences(n, m):
     P = P / P.sum(axis=1, keepdims=True)
     return np.round(P, 2)
 
-def generate_single_voter_preferences(m):
+def generate_all_voter_profiles(n,m):
     total = 10
     preferences = []
     if m == 3:
@@ -179,10 +184,7 @@ def generate_single_voter_preferences(m):
             p2 = total - p1
             preferences.append((p1 / 10, p2 / 10))
         return preferences
-
-def generate_all_voter_profiles(n, m):
-    single_voter_preferences = generate_single_voter_preferences(m)
-    return product(single_voter_preferences, repeat=n)
+    return product(preferences, repeat=n)
 
 def generate_data(n, m):
     all_profiles = generate_all_voter_profiles(n, m)
@@ -211,4 +213,45 @@ def generate_data(n, m):
         })
 
     df = pd.DataFrame(results)
+    return df
+
+def compute_disutility_for_alpha(n, m, P, alpha, disutility_type='welfare'):
+
+    allocation_IMM, _ = independent_market_mechanism(n, m, P)
+    allocation_WMPM, _ = welfare_maximizing_phantom_mechanism(n, m, P)
+
+
+    allocation = (1 - alpha) * allocation_IMM + alpha * allocation_WMPM
+
+
+    if disutility_type == 'welfare':
+
+        total_disutility = compute_disutility(P, allocation, type='welfare')
+    elif disutility_type == 'fairness':
+
+        total_disutility = compute_disutility(P, allocation, type='fairness')
+    elif disutility_type == 'proportional':
+
+        total_disutility = compute_disutility(P, allocation, type='proportional')
+    else:
+        raise ValueError("Invalid disutility_type. Choose 'welfare', 'fairness', or 'proportional'.")
+
+    result = {
+        'alpha': alpha,
+        'allocation': allocation,
+        'disutility': total_disutility
+    }
+
+    return result
+
+def iterate_over_alphas(n, m, P, alpha_values, disutility_type='welfare'):
+    results = []
+
+    for alpha in alpha_values:
+
+        result = compute_disutility_for_alpha(n, m, P, alpha, disutility_type)
+        results.append(result)
+
+    df = pd.DataFrame(results)
+
     return df
