@@ -159,7 +159,9 @@ def generate_all_voter_profiles(n, m):
     return itertools.product(single_voter_prefs, repeat=n)
 
 
-def compute_disutility_for_alpha(n, m, P, alpha, disutility_type):
+def compute_disutility_for_alpha(P, alpha, disutility_type):
+    n = P.shape[0]
+    m = P.shape[1]
 
     allocation_IMM, _,_ = independent_market_mechanism(n, m, P)
     allocation_WMPM, _, _ = welfare_maximizing_phantom_mechanism(n, m, P)
@@ -177,14 +179,13 @@ def compute_disutility_for_alpha(n, m, P, alpha, disutility_type):
 
     return result
 
-def iterate_over_alphas(n, m, P, alpha_count, disutility_type='util'):
-    results = []
+def iterate_over_alphas(P, alpha_values, disutility_type):
 
-    alpha_values = np.linspace(0, 1, alpha_count)
+    results = []
 
     for alpha in alpha_values:
 
-        result = compute_disutility_for_alpha(n, m, P, alpha, disutility_type)
+        result = compute_disutility_for_alpha(P, alpha, disutility_type)
         results.append(result)
 
     df = pd.DataFrame(results)
@@ -193,11 +194,10 @@ def iterate_over_alphas(n, m, P, alpha_count, disutility_type='util'):
 
 def tradeoff_with_alpha(P,alpha_count):
 
-    n = P.shape[0]
-    m = P.shape[1]
     alpha_values = np.linspace(0, 1, alpha_count)
-    df1 = iterate_over_alphas(n, m, P, alpha_values, disutility_type='util')
-    df2 = iterate_over_alphas(n, m, P, alpha_values, disutility_type='mean')
+    
+    df1 = iterate_over_alphas(P, alpha_values, disutility_type='util')
+    df2 = iterate_over_alphas(P, alpha_values, disutility_type='mean')
 
     both = pd.merge(df1,df2,on='alpha')
     both.rename(columns={'disutility_x':'Welfare','disutility_y':'Fairness'},inplace=True)
@@ -277,43 +277,3 @@ def mass_calculate_fairness(n, m, mechanism, metrics):
     return pd.DataFrame(results)
 
 
-def combined_allocation_and_loss(n, m, P):
-    allocation_IMM, _ = independent_market_mechanism(n, m, P)
-    allocation_WMPM, _ = welfare_maximizing_phantom_mechanism(n, m, P)
-
-    allocation_IMM = np.round(allocation_IMM, 3)
-    allocation_WMPM = np.round(allocation_WMPM, 3)
-
-    allocation_C = np.round((allocation_IMM + allocation_WMPM) / 2, 3)
-
-    total_disutility_IMM = np.round(compute_disutility(P, allocation_IMM, type="welfare"), 3)
-    total_disutility_WMPM = np.round(compute_disutility(P, allocation_WMPM, type="welfare"), 3)
-    total_disutility_C = np.round(compute_disutility(P, allocation_C, type="welfare"), 3)
-
-    welfare_loss_IMM = total_disutility_C - total_disutility_IMM
-    welfare_loss_WMPM = total_disutility_C - total_disutility_WMPM
-
-    metrics = 'proportional'
-
-    max_disutility_IMM = np.round(compute_disutility(P, allocation_IMM, type=metrics), 3)
-    max_disutility_WMPM = np.round(compute_disutility(P, allocation_WMPM, type=metrics), 3)
-    max_disutility_C = np.round(compute_disutility(P, allocation_C, type=metrics), 3)
-
-    fairness_loss_IMM = max_disutility_C - max_disutility_IMM
-    fairness_loss_WMPM = max_disutility_C - max_disutility_WMPM
-
-    return {
-        "allocation_IMM": allocation_IMM,
-        "allocation_WMPM": allocation_WMPM,
-        "combined_allocation": allocation_C,
-        "total_disutility_IMM": total_disutility_IMM,
-        "total_disutility_WMPM": total_disutility_WMPM,
-        "total_disutility_C": total_disutility_C,
-        "max_disutility_IMM": max_disutility_IMM,
-        "max_disutility_WMPM": max_disutility_WMPM,
-        "max_disutility_C": max_disutility_C,
-        "welfare_loss_IMM": welfare_loss_IMM,
-        "welfare_loss_WMPM": welfare_loss_WMPM,
-        "fairness_loss_IMM": fairness_loss_IMM,
-        "fairness_loss_WMPM": fairness_loss_WMPM,
-    }
