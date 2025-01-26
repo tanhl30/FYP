@@ -135,31 +135,25 @@ def generate_all_voter_profiles(n, m):
     Returns an iterator (or generator) of n-tuples, where each element
     of the tuple is an m-dimensional preference.
     """
-    total = 10  # We'll split into 0.1 increments
+    total = 10  
 
-    # Build the set of single-voter preferences
     single_voter_prefs = []
     if m == 3:
-        # All (p1, p2, p3) with p1+p2+p3 = 1, in steps of 0.1
         for p1 in range(total + 1):
             for p2 in range(total - p1 + 1):
                 p3 = total - p1 - p2
                 single_voter_prefs.append((p1 / 10, p2 / 10, p3 / 10))
     elif m == 2:
-        # All (p1, p2) with p1+p2 = 1, in steps of 0.1
         for p1 in range(total + 1):
             p2 = total - p1
             single_voter_prefs.append((p1 / 10, p2 / 10))
     else:
-        # For m > 3, or other values, you might define your own method here.
-        # For now, we leave an empty list or raise an error, depending on your needs.
         raise ValueError("generate_all_voter_profiles only handles m=2 or m=3 in this example.")
-
-    # Now build all n-voter profiles as an n-tuple of single-voter preferences:
     return itertools.product(single_voter_prefs, repeat=n)
 
 
 def compute_disutility_for_alpha(P, alpha, disutility_type):
+
     n = P.shape[0]
     m = P.shape[1]
 
@@ -174,7 +168,7 @@ def compute_disutility_for_alpha(P, alpha, disutility_type):
     result = {
         'alpha': alpha,
         'allocation': allocation,
-        'disutility': total_disutility
+        disutility_type: total_disutility
     }
 
     return result
@@ -192,10 +186,15 @@ def iterate_over_alphas(P, alpha_values, disutility_type):
 
     return df
 
-def tradeoff_with_alpha(P,alpha_count):
+def plot_tradeoff_with_alpha(P,alpha_count):
+    """
+    Iterate a profile over alpha, measuring the disutility and fairness for each alpha.
+    Plot the tradeoff 
+    
+    """
 
     alpha_values = np.linspace(0, 1, alpha_count)
-    
+
     df1 = iterate_over_alphas(P, alpha_values, disutility_type='util')
     df2 = iterate_over_alphas(P, alpha_values, disutility_type='mean')
 
@@ -226,30 +225,7 @@ def mass_calculate_fairness(n, m, mechanism, metrics):
     compute the chosen mechanism's allocation (IMM or WMPM),
     and then compute the specified fairness/disutility metrics for that allocation.
 
-    Parameters:
-    -----------
-    n : int
-        Number of voters.
-    m : int
-        Number of alternatives (should be 2 or 3 in this example).
-    mechanism : str
-        Either 'IMM' or 'WMPM'. Defaults to 'IMM'.
-    metrics : list of str, optional
-        The list of fairness/disutility metrics to compute. Options include
-        'gini', 'fairness', 'proportional', 'welfare'. Defaults to ['gini'].
-
-    Returns:
-    --------
-    pd.DataFrame
-        A DataFrame where each row corresponds to a unique n-voter profile.
-        Columns include:
-            - 'profile': An n-tuple of single-voter preferences (each m-tuple).
-            - 'allocation': The resulting allocation vector from the mechanism.
-            - For each metric in metrics, a column with the respective value.
     """
-
-
-    # Get an iterator of ALL n-voter profiles
     all_profiles_iterator = generate_all_voter_profiles(n, m)
     results = []
 
