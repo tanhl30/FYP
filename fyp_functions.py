@@ -186,7 +186,7 @@ def iterate_over_alphas(P, alpha_values, disutility_type):
 
     return df
 
-def plot_tradeoff_with_alpha(P,alpha_count):
+def plot_tradeoff_with_alpha(P,alpha_count,negative= False):
     """
     Iterate a profile over alpha, measuring the disutility and fairness for each alpha.
     Plot the tradeoff 
@@ -199,8 +199,12 @@ def plot_tradeoff_with_alpha(P,alpha_count):
     df2 = iterate_over_alphas(P, alpha_values, disutility_type='mean')
 
     both = pd.merge(df1,df2,on='alpha')
-    both.rename(columns={'disutility_x':'Welfare','disutility_y':'Fairness'},inplace=True)
+    both.rename(columns={'util':'Welfare','mean':'Fairness','allocation_x':'Allocation'},inplace=True)
     both.drop(columns=['allocation_y'],inplace=True)
+
+    if negative:
+        both['Fairness'] = -both['Fairness']
+        both['Welfare'] = -both['Welfare']
 
     fig, ax = plt.subplots(figsize=(7, 6))
     ax.plot(both['Fairness'],both['Welfare'],marker ='o')
