@@ -173,9 +173,14 @@ def compute_disutility_for_alpha(P, alpha, disutility_type):
 
     return result
 
-def iterate_over_alphas(P, alpha_values, disutility_type):
+def iterate_over_alphas(P, alpha_count, disutility_type):
 
     results = []
+
+    if alpha_count :
+        alpha_values = np.linspace(0, 1, alpha_count)
+    
+
 
     for alpha in alpha_values:
 
@@ -193,10 +198,9 @@ def plot_tradeoff_with_alpha(P,alpha_count,negative= False):
     
     """
 
-    alpha_values = np.linspace(0, 1, alpha_count)
 
-    df1 = iterate_over_alphas(P, alpha_values, disutility_type='util')
-    df2 = iterate_over_alphas(P, alpha_values, disutility_type='mean')
+    df1 = iterate_over_alphas(P, alpha_count, disutility_type='util')
+    df2 = iterate_over_alphas(P, alpha_count, disutility_type='mean')
 
     both = pd.merge(df1,df2,on='alpha')
     both.rename(columns={'util':'Welfare','mean':'Fairness','allocation_x':'Allocation'},inplace=True)
