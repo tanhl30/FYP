@@ -261,3 +261,37 @@ def mass_calculate_fairness(n, m, mechanism, metrics):
     return pd.DataFrame(results)
 
 
+def plot_vertical_allocation(P,show_IMM_phantom = False):
+      
+    IMM_allocation,phantom,_ = fyp.independent_market_mechanism(7,2,P)
+    WMPM_allocation,_,_ = fyp.welfare_maximizing_phantom_mechanism(7,2,P)
+
+    first_values = P[:, 0]
+    x_coords = np.zeros_like(first_values)
+    plt.figure(figsize=(3, 6))  
+    plt.scatter(x_coords, first_values, color='black')
+
+    for i, y in enumerate(first_values):
+        plt.text(0.02, y, f"{y:.2f}", fontsize=10, verticalalignment='center')
+
+    # Draw a line from (0, 0) to (0, 1) for reference
+    plt.axvline(x=0, color='gray', linestyle='--', linewidth=1)
+
+    # Set the y-limits from 0 to 1
+    plt.ylim(0, 1)
+
+    plt.xticks([])
+
+    plt.axhline(y=IMM_allocation[0], color='red', linestyle='--', label=f'IMM: {IMM_allocation[0]:.3f}')
+    plt.axhline(y=WMPM_allocation[0], color='green', linestyle='--', label=f'WMPM: {WMPM_allocation[0]:.3f}')
+
+    if show_IMM_phantom:
+        for phantom_value in phantom['phantoms']:
+            plt.axhline(y=phantom_value, color='blue', linestyle='dotted', alpha=0.6)  # Use dotted blue lines
+            plt.text(-0.02, phantom_value, f"{phantom_value:.3f}", fontsize=9, color='blue', verticalalignment='center')  # Label each phantom value
+
+        plt.plot([], [], color='blue', linestyle='dotted', alpha=0.6, label='Phantoms')
+
+    plt.title("Allocations Comparison")
+    plt.legend(loc='best')
+    plt.show()
