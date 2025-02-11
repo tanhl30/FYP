@@ -7,7 +7,6 @@ I would try to keep the explanation as simple as possible, but if you are curiou
 
 - `fyp_functions.py`: Contains the core functions to run my simulations and visuaization.
 - `main.ipynb`,`topic_1.ipynb`,`topic_2.ipynb`: Simluation and experiment playground
-- `Old/`: Old code kept as reference 
 - `README.md`: Project overview and introduction.
 
 
