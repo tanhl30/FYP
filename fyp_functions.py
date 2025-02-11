@@ -3,8 +3,6 @@ import itertools
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
-
 def independent_market_mechanism(n, m, P):
     def compute_sum_medians(t):
         phantoms = np.clip(t * (n - np.arange(n + 1)), 0, 1).tolist()
@@ -92,7 +90,6 @@ def welfare_maximizing_phantom_mechanism(n, m, P):
     mechanism_info = {'phantoms': phantoms, 't': t}
     return allocation, mechanism_info, detailed_info
 
-
 def compute_disutility(P, allocation, type):
     disutility = np.sum(np.abs(P - allocation), axis=1)  #array of nx1, disutility per agent
     if type == 'util':
@@ -116,15 +113,12 @@ def compute_disutility(P, allocation, type):
         
         return gini
 
-
 def generate_random_preferences(n, m, decimal = None):
     P = np.random.rand(n, m)
     P = P / P.sum(axis=1, keepdims=True)
     if decimal is not None:
         P = np.round(P,decimal)
     return P
-
-
 
 def generate_all_voter_profiles(n, m):
     """
