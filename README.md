@@ -1,39 +1,43 @@
-# Introduction
-This repository contains code to run simulations and visualization of study in Budget Proposal Aggregation (https://en.wikipedia.org/wiki/Budget-proposal_aggregation).
+## **Introduction**  
+This repository contains code for **simulations and visualizations** related to **Budget Proposal Aggregation**, a key area in participatory budgeting. The focus is on implementing and studying the **Independent Market Mechanism (IMM)**, a method used to fairly allocate public funds based on citizen votes.
 
-I would try to keep the explanation as simple as possible, but if you are curious, please refer to the influencial paper published by Freeman et al. (2021): https://arxiv.org/abs/1905.00457 or my own paper: [to be summited ;P]
+For further reading, refer to:  
+- [Wikipedia: Budget Proposal Aggregation](https://en.wikipedia.org/wiki/Budget-proposal_aggregation)  
+- **Freeman et al. (2021)**: [https://arxiv.org/abs/1905.00457](https://arxiv.org/abs/1905.00457)  
+- My own research (to be submitted 😉)
+  
 
 ## Repository Structure
 
-- `fyp_functions.py`: Contains the core functions to run my simulations and visuaization.
+- `fyp_functions.py`: Contains the core functions to run my simulations and visualization.
 - `main.ipynb`,`topic_1.ipynb`,`topic_2.ipynb`: Simluation and experiment playground
 - `README.md`: Project overview and introduction.
 
+## **Research Background: Participatory Budgeting**  
+**Participatory Budgeting (PB)** is a democratic process where citizens vote on how public funds should be allocated in their communities (e.g., municipalities or neighborhoods). Unlike traditional representative democracy, PB enhances transparency, reduces corruption, and fosters inclusivity, particularly for marginalized groups. Initially introduced in Brazil (1989), PB has since expanded across Latin America, North America, and Europe.
 
-# Brief Research Introduction
-Participatory budgeting is a democratic process that empowers citizens to vote on the allocation of public funds within their communities, such as municipalities, towns, or neighborhoods. Unlike traditional representative democracy, PB invites citizens to engage directly in budgetary decision-making, reducing corruption while fostering inclusivity, particularly for marginalized and historically underrepresented groups. Originally developed in Brazil in 1989, it has since spread widely across Latin America, North America, and Europe.
+### **Independent Market Mechanism (IMM)**  
+#### **The Problem:**  
+A well-known **phantom mechanism** (Moulin, 1980) **places `n+1` phantom votes among `n` actual votes** and selects the median as the allocation. While this ensures fairness and proportionality, **the total allocation may exceed 100% when there are more than two alternatives (`m > 2`)**.
 
-One of the main focus of study centered around budget proposal aggregation named 'Independent Market Mechanism' (IMM).
+#### **IMM Solution:**  
+IMM strategically adjusts phantom votes to ensure that the sum of medians **always equals 1**. In Python terms, it **uses binary search to find an optimal scaling factor `t`** that balances the median-based allocation.
 
-## Indenpendent Market Mechanism (IMM)
-Let's say we have n voters and m projects, and all voters submit an allocation of budget. For example, voter A submit an allocation of [0.8,0.2], meaniing that voter A prefers to allocate 80% of the budget to project 1 and 20% to project 2.
+## **Code Usage**  
+### **Running IMM on Random Preferences**  
+```python  
+from fyp_functions import fyp
 
- When we only have two alternatives (m=2), a great way to decide the outcome is to pick the median of all the n votes & n+1 phantoms, where phantoms are placed uniformly between 0 and 1. The reason that a phantom system is preferred instead of simply taking the mean or median is because it is proportional and truthful (out of the scope of this markdown).
+P = fyp.generate_random_preferences(n=5, m=3, seed=2)  
+allocation, mechanism_info, detailed_info = fyp.independent_market_mechanism(n, m, P)  
+```
 
-The issue with this method is that at m>2, the median of the phantom systems will not neccessarilly add up to 1. Recall that this is an allocation of budget so we need the final allocation (ie, all of the medians in phantom system) to add up to 1.
+### **Visualizing Vote & Phantom Interactions**  
+To better understand the impact of phantom votes, we can generate a visualization:
+```python  
+fyp.plot_vertical_allocation(P, show_phantoms=True)  
+```
+![pic](https://github.com/user-attachments/assets/0f6dcb22-a03e-4646-b61f-f3ad36fe09fa)  
 
-IMM could solve this issue by normalizing the outcome. Instead of placing phantoms uniformly, we placed them dynamically according to the votes, where we move the phantoms continuously from 0 to 1, until the sum of the medians is 1.
 
-![IMM Demostration](image.png)
 
-To build intuition, we consider an example moving phantom mechanism, shown in Figure 1.
-There are three alternatives, each occupying a column on the horizontal axis, and four voters. Voter
-reports are indicated by gray horizontal line segments, with their magnitude 𝑝ˆ𝑖, 𝑗 indicated by their vertical position. The phantom placements are indicated by the red lines and labeled 𝑓0, . . . , 𝑓4. For each alternative, the median of the four agent reports and the five phantoms is indicated by a rectangle.
-
-The four snapshots shown in Figure 1 display increasing values of 𝑡.Observe that the position
-of each phantom (weakly) increases from left to right, as does the median on each alternative.
-Although the vertical axis is not labeled, for simplicity of presentation, normalization here occurs
-in the second image from the left. In the leftmost image, the sum of the highlighted entries is less
-than 1, while in the two rightmost images it is more than 1.
-
-## Indenpendent Market Mechanism (IMM)
