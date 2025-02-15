@@ -145,7 +145,6 @@ def generate_all_voter_profiles(n, m):
         raise ValueError("generate_all_voter_profiles only handles m=2 or m=3 in this example.")
     return itertools.product(single_voter_prefs, repeat=n)
 
-
 def compute_disutility_for_alpha(P, alpha, disutility_type):
 
     n = P.shape[0]
@@ -173,8 +172,6 @@ def iterate_over_alphas(P, alpha_count, disutility_type):
 
     if alpha_count :
         alpha_values = np.linspace(0, 1, alpha_count)
-    
-
 
     for alpha in alpha_values:
 
@@ -191,7 +188,6 @@ def plot_tradeoff_with_alpha(P,alpha_count,negative= False):
     Plot the tradeoff 
     
     """
-
 
     df1 = iterate_over_alphas(P, alpha_count, disutility_type='util')
     df2 = iterate_over_alphas(P, alpha_count, disutility_type='mean')
@@ -256,9 +252,11 @@ def mass_calculate_fairness(n, m, mechanism, metrics):
 
 
 def plot_vertical_allocation(P,show_IMM_phantom = False):
+    n = len(P)
+    m = len(P[0])
       
-    IMM_allocation,phantom,_ = fyp.independent_market_mechanism(7,2,P)
-    WMPM_allocation,_,_ = fyp.welfare_maximizing_phantom_mechanism(7,2,P)
+    IMM_allocation,phantom,_ = independent_market_mechanism(n,m,P)
+    WMPM_allocation,_,_ = welfare_maximizing_phantom_mechanism(n,m,P)
 
     first_values = P[:, 0]
     x_coords = np.zeros_like(first_values)
